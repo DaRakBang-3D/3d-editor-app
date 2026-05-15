@@ -1,6 +1,7 @@
 "use client"
 import { useUIStore } from "@/modules/editor/store/use-ui-store"
 import { useObjectStore } from "@/modules/objects/store/use-object-store"
+import { PlacementType } from "@/shared/types"
 import {
   Badge,
   Button,
@@ -23,16 +24,26 @@ import {
   Cylinder,
   Layers,
   Lock,
+  PanelBottom,
+  PanelLeft,
   PanelLeftClose,
   Plus,
   Settings,
   Unlock,
 } from "lucide-react"
+import { useState } from "react"
 import { PropertyPanel } from "../property-panels/property-panel"
 import { ObjectsList } from "./object-list"
 
+const PLACEMENT_OPTIONS: { type: PlacementType; label: string; icon: React.ReactNode }[] = [
+  { type: "floor", label: "바닥", icon: <PanelBottom className="w-3 h-3" /> },
+  { type: "wall",  label: "벽",   icon: <PanelLeft className="w-3 h-3" /> },
+  { type: "both",  label: "모두", icon: <Box className="w-3 h-3" /> },
+]
+
 export function EditorSidebar() {
   const { addObject, objectIds } = useObjectStore()
+  const [quickAddPlacementType, setQuickAddPlacementType] = useState<PlacementType>("floor")
   const {
     setSidebarOpen,
     isEditMode,
@@ -103,10 +114,31 @@ export function EditorSidebar() {
                       <span className="hidden sm:inline">Quick Add</span>
                     </CardTitle>
                   </CardHeader>
-                  <CardContent className="pt-0">
+                  <CardContent className="pt-0 space-y-2">
+                    {/* PlacementType 토글 */}
+                    <div className="flex gap-1">
+                      {PLACEMENT_OPTIONS.map(({ type, label, icon }) => (
+                        <button
+                          key={type}
+                          onClick={() => setQuickAddPlacementType(type)}
+                          disabled={!isEditMode}
+                          className={[
+                            "flex-1 flex items-center justify-center gap-1 rounded-md border px-2 py-1 text-xs transition-colors",
+                            quickAddPlacementType === type
+                              ? "bg-primary text-primary-foreground border-primary"
+                              : "bg-background text-muted-foreground hover:bg-muted border-input",
+                            !isEditMode ? "opacity-50 cursor-not-allowed" : "cursor-pointer",
+                          ].join(" ")}
+                        >
+                          {icon}
+                          <span>{label}</span>
+                        </button>
+                      ))}
+                    </div>
+                    {/* 오브젝트 추가 버튼 */}
                     <div className="flex flex-wrap gap-2">
                       <Button
-                        onClick={() => addObject("box")}
+                        onClick={() => addObject("box", quickAddPlacementType)}
                         size="sm"
                         variant="outline"
                         className="flex-1 flex items-center justify-center gap-1 min-w-[60px]"
@@ -116,7 +148,7 @@ export function EditorSidebar() {
                         <span className="hidden sm:inline">Box</span>
                       </Button>
                       <Button
-                        onClick={() => addObject("sphere")}
+                        onClick={() => addObject("sphere", quickAddPlacementType)}
                         size="sm"
                         variant="outline"
                         className="flex-1 flex items-center justify-center gap-1 min-w-[60px]"
@@ -126,7 +158,7 @@ export function EditorSidebar() {
                         <span className="hidden sm:inline">Sphere</span>
                       </Button>
                       <Button
-                        onClick={() => addObject("cylinder")}
+                        onClick={() => addObject("cylinder", quickAddPlacementType)}
                         size="sm"
                         variant="outline"
                         className="flex-1 flex items-center justify-center gap-1 min-w-[60px]"

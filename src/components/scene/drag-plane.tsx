@@ -9,6 +9,9 @@ import { ThreeEvent } from "@react-three/fiber"
 import { useEffect, useRef, useState } from "react"
 import * as THREE from "three"
 
+const ROTATION_SNAP = Math.PI / 2   // R키: 90° 스냅
+const ROTATION_FINE = Math.PI / 12  // 스크롤: 15° 미세 조정
+
 // 그리드 스냅
 const GRID_SIZE = 0.5
 const snap = (v: number) => Math.round(v / GRID_SIZE) * GRID_SIZE
@@ -144,6 +147,42 @@ export const DragPlane = () => {
       if (obj) dragStartRotationRef.current = { ...obj.rotation }
     } else {
       dragStartRotationRef.current = null
+    }
+  }, [draggingObjectId])
+
+  // 3-B-7: R키(90° 스냅) / 스크롤(15° 미세) 회전 이벤트 — 드래그 중에만 활성화
+  useEffect(() => {
+    if (!draggingObjectId) return
+
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key.toLowerCase() !== "r") return
+      const store = useObjectStore.getState()
+      const obj = store.objects[draggingObjectId]
+      if (!obj) return
+      const newRotY = obj.rotation.y + ROTATION_SNAP
+      store.setDragRotationY(store.dragRotationY + ROTATION_SNAP)
+      store.updateObjectTransform(draggingObjectId, {
+        rotation: { ...obj.rotation, y: newRotY },
+      })
+    }
+
+    const handleWheel = (e: WheelEvent) => {
+      e.preventDefault()
+      const store = useObjectStore.getState()
+      const obj = store.objects[draggingObjectId]
+      if (!obj) return
+      const delta = e.deltaY > 0 ? ROTATION_FINE : -ROTATION_FINE
+      store.setDragRotationY(store.dragRotationY + delta)
+      store.updateObjectTransform(draggingObjectId, {
+        rotation: { ...obj.rotation, y: obj.rotation.y + delta },
+      })
+    }
+
+    window.addEventListener("keydown", handleKeyDown)
+    window.addEventListener("wheel", handleWheel, { passive: false })
+    return () => {
+      window.removeEventListener("keydown", handleKeyDown)
+      window.removeEventListener("wheel", handleWheel)
     }
   }, [draggingObjectId])
 

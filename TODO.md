@@ -51,19 +51,19 @@
 
 - [x] R3F 기반 기본 Scene 세팅 및 OrbitControls 구성
 - [x] Selection 하이라이트 (Outlines), 호버 발광 — 이미 구현 완료
-- [ ] **1-1** `use-object-store`에 드래그 상태 추가
+- [x] **1-1** `use-object-store`에 드래그 상태 추가
   - `draggingObjectId: string | null`
   - `dragStartPosition: { x, y, z } | null`
   - `setDragging(id, startPos)` 액션
-- [ ] **1-2** `SceneObject`에 `onPointerDown` 추가
+- [x] **1-2** `SceneObject`에 `onPointerDown` 추가
   - 드래그 시작 시 `setDragging` 호출
   - 오브젝트 선택도 동시에 처리
-- [ ] **1-3** `DragPlane` 컴포넌트 구현 (`src/components/scene/drag-plane.tsx`)
+- [x] **1-3** `DragPlane` 컴포넌트 구현 (`src/components/scene/drag-plane.tsx`)
   - 드래그 중에만 렌더링되는 투명한 대형 XZ 평면 메시
   - `onPointerMove` → `e.point`로 교차점 획득 → 그리드 스냅(0.5단위) 적용
   - Y축은 드래그 시작 시점 값 유지 (바닥 관통 방지)
   - `onPointerUp` → `UpdateTransformCommand` 등록 → 드래그 상태 초기화
-- [ ] **1-4** `EditorScene` 통합
+- [x] **1-4** `EditorScene` 통합
   - `<OrbitControls enabled={!draggingObjectId} />` — 드래그 중 카메라 잠금
   - `<DragPlane />` Canvas 내부에 추가
 
@@ -102,29 +102,76 @@
   > - 벽면 흡착 시 `outwardNormal` 기반 `rotation.y` 자동 적용 (방 안쪽을 바라봄)
   > - `pointerUp` 시 position + rotation 각각 `UpdateTransformCommand` 등록 (Undo 지원)
   > - 회전 테이블: north→PI, south→0, east→PI/2, west→-PI/2
-- [ ] **3-A-4** 속성 패널에서 `placementType` 표시 및 변경 UI
+- [x] **3-A-4** 속성 패널에서 `placementType` 표시 및 변경 UI
   > Properties 탭 내 PlacementType 셀렉터 (floor / wall / both)
-- [ ] **3-A-5** 사이드바 Quick Add에서 wall/both 타입 오브젝트 추가 지원
-  > 현재 모두 `"floor"` 기본값 — 오브젝트 마켓플레이스 연동 시 확장
+  > `src/components/property-panels/panels/basic-properties-panel.tsx` 구현 완료
+- [x] **3-A-5** 사이드바 Quick Add에서 wall/both 타입 오브젝트 추가 지원
+  > `src/components/sidebar/editor-sidebar.tsx` — PlacementType 토글(바닥/벽/모두) 추가
+  > 선택된 타입으로 Box/Sphere/Cylinder 추가 가능
 
 ---
 
-#### 3-B. 오브젝트 마켓플레이스 — ⏳ 예정
+#### 3-B. 배치 인터랙션 UX — ⏳ 예정
 
-- [ ] **3-B-1** 오브젝트 스토어(마켓) 기능 설계
+##### 풋프린트 투영 (Footprint Projection)
+
+- [x] **3-B-1** AABB에서 풋프린트 크기 계산 유틸 추가
+  - `src/modules/objects/utils/aabb.ts`에 `getFootprintSize()` 함수 추가
+  - width(x), depth(z), height(y) 반환
+- [x] **3-B-2** `FootprintProjection` 컴포넌트 구현 (`src/components/scene/footprint-projection.tsx`)
+  - `draggingObjectId` 있을 때만 렌더링
+  - `PlaneGeometry`로 AABB width/depth 기반 평면 생성
+  - Y=0.01 (z-fighting 방지), `depthWrite: false`
+  - 머티리얼: `MeshBasicMaterial`, `transparent: true`, `opacity: 0.3`
+- [x] **3-B-3** 배치 유효성 기반 색상 연동
+  - 충돌 없음 → 초록(`#00ff88`), 충돌 있음 → 빨간(`#ff3333`)
+  - 기존 `getCollidingIds()` 결과와 연동
+- [x] **3-B-4** 벽면 오브젝트 풋프린트 처리
+  - `placementType === "wall"` 시 바닥 대신 흡착된 벽면에 투영
+  - 오브젝트 위치 기반 wall face 자동 감지 후 평면 회전 적용
+- [x] **3-B-5** `EditorScene`에 `<FootprintProjection />` 통합
+
+---
+
+##### 배치 중 회전 (Rotation During Placement)
+
+- [x] **3-B-6** `use-object-store` 드래그 상태에 회전값 추가
+  - `dragRotationY: number` 필드 추가 (기본값 `0`)
+  - `setDragRotationY(angle: number)` 액션 추가
+  - `setDragging()` 호출 시 `dragRotationY` 자동 초기화
+- [x] **3-B-7** `DragPlane`에 R키 / 스크롤 이벤트 핸들러 추가
+  - `keydown` → `R` 키 → `dragRotationY += Math.PI / 2` (90° 스냅 회전)
+  - 스크롤휠 → `dragRotationY += ±Math.PI / 12` (15° 미세 조정)
+  - 드래그 중(`draggingObjectId !== null`)에만 이벤트 활성화
+- [x] **3-B-8** 드래그 중 오브젝트에 회전값 실시간 반영
+  - `updateObjectTransform`으로 store 즉시 반영 → `SceneObject` 자동 렌더링
+- [x] **3-B-9** 드롭 시 회전값을 커맨드에 포함
+  - 기존 `dragStartRotationRef` 메커니즘이 수동 회전 변화도 감지하여 `UpdateTransformCommand` 자동 등록
+- [x] **3-B-10** 키 힌트 UI 오버레이 (`src/components/ui/drag-hint-overlay.tsx`)
+  - 드래그 중에만 Canvas 위에 `"R: 90° 회전 | 스크롤: 미세 조정"` 힌트 표시
+  - 드래그 종료 시 자동 숨김
+
+---
+
+#### 3-C. 오브젝트 마켓플레이스 — ⏳ 예정
+
+- [ ] **3-C-1** 공통 `MarketplaceObject` 인터페이스 정의
+  - `id`, `name`, `category`, `placementType`, `thumbnail`, `asset(url/type)`, `defaultTransform`, `createdBy`
+  - GLB/GLTF 파일은 파일 스토리지 URL로 참조, geometry 직렬화 방식 결정
+- [ ] **3-C-2** 오브젝트 스토어(마켓) 기능 설계
   - 저장된 오브젝트 카탈로그 UI (썸네일, 이름, placementType 표시)
   - 사이드바에서 드래그앤드롭으로 씬에 배치
   - 드롭 위치 기반 placementType 자동 판단 (바닥 근처 → floor, 벽 근처 → wall)
-- [ ] **3-B-2** 오브젝트 CRUD — placementType 포함 직렬화/역직렬화
+- [ ] **3-C-3** 오브젝트 CRUD API 연동 — placementType 포함 직렬화/역직렬화
 
 ---
 
-#### 3-C. 지능형 공간 구성 및 최적화 — ⏳ 예정
+#### 3-D. 지능형 공간 구성 및 최적화 — ⏳ 예정
 
-- [ ] **3-C-1** rapier (wasm 기반) 물리 엔진 연동
+- [ ] **3-D-1** rapier (wasm 기반) 물리 엔진 연동
   - AABB 충돌 정밀화 → 물리적 밀어내기
-- [ ] **3-C-2** 인테리어 원칙 시각화
+- [ ] **3-D-2** 인테리어 원칙 시각화
   - 삼분할 가이드라인을 그리드에 오버레이
-- [ ] **3-C-3** InstancedMesh 최적화
+- [ ] **3-D-3** InstancedMesh 최적화
   - 동일 타입 오브젝트 50개 이상 시 자동 전환
   - 60FPS 유지 목표

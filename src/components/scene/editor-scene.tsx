@@ -7,7 +7,9 @@ import { ContactShadows, OrbitControls } from "@react-three/drei"
 import { Canvas } from "@react-three/fiber"
 import React, { useEffect, useRef } from "react"
 import { RoomWalls } from "../objects/3d"
+import { DragHintOverlay } from "../ui/drag-hint-overlay"
 import { DragPlane } from "./drag-plane"
+import { FootprintProjection } from "./footprint-projection"
 import { SceneObject } from "./scene-object"
 
 /**
@@ -121,6 +123,9 @@ export const EditorScene = () => {
           />
         ))}
 
+        {/* 드래그 풋프린트 투영: 드래그 중에만 활성화 */}
+        <FootprintProjection />
+
         {/* 드래그 평면: 드래그 중에만 활성화 */}
         <DragPlane />
 
@@ -137,6 +142,9 @@ export const EditorScene = () => {
         <fog attach="fog" args={["#f0f0f0", 20, 100]} />
         <color attach="background" args={["#f0f0f0"]} />
       </Canvas>
+
+      {/* 드래그 중 키 힌트 오버레이 */}
+      <DragHintOverlay />
 
       {/* 선택된 오브젝트 표시 */}
       {selectedObjectId && (
