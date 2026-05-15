@@ -11,6 +11,7 @@ interface ObjectStoreState {
   // --- 드래그 상태 ---
   draggingObjectId: string | null
   dragStartPosition: { x: number; y: number; z: number } | null
+  dragRotationY: number
   // --- 충돌 상태 ---
   collidingObjectIds: string[]
   // --- 클립보드 ---
@@ -22,6 +23,7 @@ interface ObjectStoreState {
   selectObject: (id: string | null) => void
   setHoveredObjectId: (id: string | null) => void
   setDragging: (id: string | null, startPos: { x: number; y: number; z: number } | null) => void
+  setDragRotationY: (angle: number) => void
   setCollidingObjectIds: (ids: string[]) => void
   copyToClipboard: (id: string) => void
   updateObjectProperty: (id: string, property: keyof Object3DInfo, value: unknown) => void
@@ -41,6 +43,7 @@ export const useObjectStore = create<ObjectStoreState>()(
     hoveredObjectId: null,
     draggingObjectId: null,
     dragStartPosition: null,
+    dragRotationY: 0,
     collidingObjectIds: [],
     clipboardObject: null,
 
@@ -93,7 +96,11 @@ export const useObjectStore = create<ObjectStoreState>()(
     },
 
     setDragging: (id, startPos) => {
-      set({ draggingObjectId: id, dragStartPosition: startPos })
+      set({ draggingObjectId: id, dragStartPosition: startPos, dragRotationY: 0 })
+    },
+
+    setDragRotationY: angle => {
+      set({ dragRotationY: angle })
     },
 
     setCollidingObjectIds: ids => {
