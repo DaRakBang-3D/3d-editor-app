@@ -1,3 +1,5 @@
+"use client"
+
 import { useUIStore } from "@/modules/editor/store/use-ui-store"
 import { useObjectById } from "@/modules/objects/store/use-object-by-id"
 import { useObjectStore } from "@/modules/objects/store/use-object-store"

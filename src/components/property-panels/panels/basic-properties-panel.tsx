@@ -1,3 +1,5 @@
+"use client"
+
 import { useUIStore } from "@/modules/editor/store/use-ui-store"
 import { useObjectStore } from "@/modules/objects/store/use-object-store"
 import { useSelectedObject } from "@/modules/objects/store/use-selected-object"
