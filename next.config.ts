@@ -1,6 +1,5 @@
 import type { NextConfig } from "next"
 import path from "path"
-import webpack from "webpack"
 
 
 const mfConfig = {
@@ -15,7 +14,7 @@ const mfConfig = {
 const nextConfig: NextConfig = {
   transpilePackages: ["three", "postprocessing", "n8ao"],
 
-  webpack(config, { isServer }) {
+  webpack(config, { isServer, webpack }) {
     if (!isServer) {
       // remoteEntry.js가 동적 script 주입으로 로드될 때 document.currentScript = null
       // → publicPath를 절대 경로로 명시해야 chunk URL이 올바르게 생성됨
