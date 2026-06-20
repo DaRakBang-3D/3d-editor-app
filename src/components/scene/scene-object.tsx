@@ -48,7 +48,6 @@ export const SceneObject = ({ objectId, isSelected }: SceneObjectProps): React.R
   }
 
   const sharedProps = {
-    objectInfo,
     isSelected,
     isHovered,
     isColliding,
@@ -60,11 +59,14 @@ export const SceneObject = ({ objectId, isSelected }: SceneObjectProps): React.R
 
   switch (objectInfo.type) {
   case "box":
-    return <Box {...sharedProps} />
+    return <Box {...sharedProps} objectInfo={objectInfo} />
   case "sphere":
-    return <Sphere {...sharedProps} />
+    return <Sphere {...sharedProps} objectInfo={objectInfo} />
   case "cylinder":
-    return <Cylinder {...sharedProps} />
+    return <Cylinder {...sharedProps} objectInfo={objectInfo} />
+  case "imported":
+    // TODO: ImportedObject 렌더 컴포넌트 (Step 6에서 구현)
+    return null
   default:
     return null
   }

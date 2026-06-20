@@ -30,7 +30,12 @@ export const BaseObject = React.forwardRef<THREE.Group, BaseObjectProps>(
       >
         <mesh castShadow receiveShadow>
           {children}
-          <meshStandardMaterial color={objectInfo.color || "#ffffff"} />
+          <meshStandardMaterial
+            color={objectInfo.color || "#ffffff"}
+            roughness={0.75}
+            metalness={0.05}
+            envMapIntensity={0.4}
+          />
           {isColliding && <Outlines thickness={5} color={COLLISION_COLOR} />}
           {!isColliding && isSelected && <Outlines thickness={4} color={SELECTED_COLOR} />}
           {!isColliding && !isSelected && isHovered && <Outlines thickness={2} color="#aaaaaa" />}

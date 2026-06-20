@@ -3,7 +3,9 @@
 import { commandManager } from "@/managers/command-manager"
 import { PasteObjectCommand } from "@/managers/commands/paste-object-command"
 import { useObjectStore } from "@/modules/objects/store/use-object-store"
-import { ContactShadows, OrbitControls } from "@react-three/drei"
+import { ContactShadows, Environment, OrbitControls } from "@react-three/drei"
+import { EffectComposer, SSAO, Vignette } from "@react-three/postprocessing"
+import { BlendFunction } from "postprocessing"
 import { Canvas } from "@react-three/fiber"
 import React, { useEffect, useRef } from "react"
 import { RoomWalls } from "../objects/3d"
@@ -137,6 +139,24 @@ export const EditorScene = () => {
           maxDistance={100}
           maxPolarAngle={Math.PI / 2.1}
         />
+
+        {/* 환경맵: envMapIntensity 재질 프리셋에 반응하도록 */}
+        <Environment preset="apartment" />
+
+        {/* Post-processing */}
+        <EffectComposer>
+          <SSAO
+            blendFunction={BlendFunction.MULTIPLY}
+            samples={16}
+            radius={0.05}
+            intensity={10}
+          />
+          <Vignette
+            offset={0.4}
+            darkness={0.4}
+            blendFunction={BlendFunction.NORMAL}
+          />
+        </EffectComposer>
 
         {/* 배경 */}
         <fog attach="fog" args={["#f0f0f0", 20, 100]} />

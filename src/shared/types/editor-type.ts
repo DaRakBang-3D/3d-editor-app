@@ -20,4 +20,15 @@ interface Object3DInfo {
   placementType: PlacementType
 }
 
-export type { Object3DInfo, PlacementType }
+type MaterialPreset = "matte" | "glossy" | "wood" | "fabric" | "metal" | "concrete"
+
+interface ImportedObject3DInfo extends Omit<Object3DInfo, "type"> {
+  type: "imported"
+  modelUrl: string
+  originalFileName: string
+  materialPreset: MaterialPreset
+}
+
+type SceneObject = Object3DInfo | ImportedObject3DInfo
+
+export type { Object3DInfo, ImportedObject3DInfo, SceneObject, PlacementType, MaterialPreset }

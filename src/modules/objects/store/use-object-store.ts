@@ -1,10 +1,10 @@
-import { Object3DInfo, PlacementType } from "@/shared/types"
+import { Object3DInfo, ImportedObject3DInfo, SceneObject, PlacementType } from "@/shared/types"
 import { create } from "zustand"
 import { subscribeWithSelector } from "zustand/middleware"
 import { Vector3Like } from "three"
 
 interface ObjectStoreState {
-  objects: Record<string, Object3DInfo>
+  objects: Record<string, SceneObject>
   objectIds: string[]
   selectedObjectId: string | null
   hoveredObjectId: string | null
@@ -15,18 +15,19 @@ interface ObjectStoreState {
   // --- 충돌 상태 ---
   collidingObjectIds: string[]
   // --- 클립보드 ---
-  clipboardObject: Object3DInfo | null
+  clipboardObject: SceneObject | null
 
   // --- Actions ---
   addObject: (type: "box" | "sphere" | "cylinder", placementType?: PlacementType) => void
-  addClonedObject: (source: Object3DInfo) => string
+  addImportedObject: (info: Omit<ImportedObject3DInfo, "id">) => string
+  addClonedObject: (source: SceneObject) => string
   selectObject: (id: string | null) => void
   setHoveredObjectId: (id: string | null) => void
   setDragging: (id: string | null, startPos: { x: number; y: number; z: number } | null) => void
   setDragRotationY: (angle: number) => void
   setCollidingObjectIds: (ids: string[]) => void
   copyToClipboard: (id: string) => void
-  updateObjectProperty: (id: string, property: keyof Object3DInfo, value: unknown) => void
+  updateObjectProperty: (id: string, property: keyof SceneObject, value: unknown) => void
   updateObjectTransform: (
     id: string,
     transform: Partial<{ position: Vector3Like; rotation: Vector3Like; scale: Vector3Like }>,
@@ -67,9 +68,20 @@ export const useObjectStore = create<ObjectStoreState>()(
       }))
     },
 
+    addImportedObject: info => {
+      const id = `imported_${Date.now()}`
+      const newObject: ImportedObject3DInfo = { ...info, id }
+      set(state => ({
+        objects: { ...state.objects, [id]: newObject },
+        objectIds: [...state.objectIds, id],
+        selectedObjectId: id,
+      }))
+      return id
+    },
+
     addClonedObject: source => {
       const id = `${source.type}_${Date.now()}`
-      const cloned: Object3DInfo = {
+      const cloned: SceneObject = {
         ...source,
         id,
         name: `${source.name} (복사)`,

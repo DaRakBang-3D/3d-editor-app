@@ -23,6 +23,7 @@ import {
   Circle,
   Cylinder,
   Layers,
+  Library,
   Lock,
   PanelBottom,
   PanelLeft,
@@ -32,6 +33,8 @@ import {
   Unlock,
 } from "lucide-react"
 import { useState } from "react"
+import { ImportModelModal } from "@/modules/import/ui/import-model-modal"
+import { LibraryPanel } from "@/modules/import/ui/library-panel"
 import { PropertyPanel } from "../property-panels/property-panel"
 import { ObjectsList } from "./object-list"
 
@@ -44,6 +47,7 @@ const PLACEMENT_OPTIONS: { type: PlacementType; label: string; icon: React.React
 export function EditorSidebar() {
   const { addObject, objectIds } = useObjectStore()
   const [quickAddPlacementType, setQuickAddPlacementType] = useState<PlacementType>("floor")
+  const [importModalOpen, setImportModalOpen] = useState(false)
   const {
     setSidebarOpen,
     isEditMode,
@@ -84,27 +88,35 @@ export function EditorSidebar() {
       <CardContent className="p-0 flex-1 flex flex-col min-h-0">
         <Tabs
           value={activePanel}
-          onValueChange={v => setActivePanel(v as "objects" | "properties" | "materials")}
+          onValueChange={v => setActivePanel(v as "objects" | "library" | "properties" | "materials")}
           className="flex-1 flex flex-col min-h-0"
         >
           <div className="px-4 pb-3 shrink-0">
-            <TabsList className="grid w-full grid-cols-2">
-              <TabsTrigger value="objects" className="flex items-center gap-2">
-                <Layers className="w-4 h-4" />
-                <span className="hidden sm:inline">Objects</span>
-                <Badge variant="secondary" className="ml-1 text-xs">
+            <TabsList className="grid w-full grid-cols-3">
+              <TabsTrigger value="objects" className="flex items-center gap-1.5">
+                <Layers className="w-3.5 h-3.5" />
+                <span className="hidden sm:inline text-xs">Objects</span>
+                <Badge variant="secondary" className="ml-0.5 text-xs px-1">
                   {objectIds.length}
                 </Badge>
               </TabsTrigger>
-              <TabsTrigger value="properties" className="flex items-center gap-2">
-                <Settings className="w-4 h-4" />
-                <span className="hidden sm:inline">Properties</span>
+              <TabsTrigger value="library" className="flex items-center gap-1.5">
+                <Library className="w-3.5 h-3.5" />
+                <span className="hidden sm:inline text-xs">라이브러리</span>
+              </TabsTrigger>
+              <TabsTrigger value="properties" className="flex items-center gap-1.5">
+                <Settings className="w-3.5 h-3.5" />
+                <span className="hidden sm:inline text-xs">Properties</span>
               </TabsTrigger>
             </TabsList>
           </div>
 
           {/* overflow-hidden: 자식의 h-full이 올바른 높이 기준점을 갖도록 제한 */}
           <div className="flex-1 min-h-0 overflow-hidden">
+            <TabsContent value="library" className="h-full m-0">
+              <LibraryPanel onImportClick={() => setImportModalOpen(true)} />
+            </TabsContent>
+
             <TabsContent value="objects" className="h-full m-0 overflow-y-auto">
               <div className="px-4 pb-4">
                 <Card className="mb-4">
@@ -180,6 +192,8 @@ export function EditorSidebar() {
           </div>
         </Tabs>
       </CardContent>
+
+      <ImportModelModal open={importModalOpen} onOpenChange={setImportModalOpen} />
     </Card>
   )
 }

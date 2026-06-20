@@ -6,7 +6,7 @@ import { create } from "zustand"
 interface UIStoreState {
   // --- State ---
   sidebarOpen: boolean
-  activePanel: "objects" | "properties" | "materials"
+  activePanel: "objects" | "library" | "properties" | "materials"
   cameraPosition: [number, number, number]
   cameraTarget: [number, number, number]
   isEditMode : boolean
@@ -14,7 +14,7 @@ interface UIStoreState {
   // --- Actions ---
   toggleEditMode:()=>void
   setSidebarOpen: (open: boolean) => void
-  setActivePanel: (panel: "objects" | "properties" | "materials") => void
+  setActivePanel: (panel: "objects" | "library" | "properties" | "materials") => void
   setCameraState: (position: [number, number, number], target: [number, number, number]) => void
 }
 

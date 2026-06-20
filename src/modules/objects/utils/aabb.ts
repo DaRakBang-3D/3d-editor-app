@@ -1,4 +1,4 @@
-import { Object3DInfo } from "@/shared/types"
+import { SceneObject } from "@/shared/types"
 
 interface AABB {
   min: { x: number; y: number; z: number }
@@ -6,7 +6,7 @@ interface AABB {
 }
 
 /** 오브젝트의 바닥 풋프린트 크기 (XZ 평면 기준) 를 반환합니다 */
-export function getFootprintSize(obj: Object3DInfo): { width: number; depth: number; height: number } {
+export function getFootprintSize(obj: SceneObject): { width: number; depth: number; height: number } {
   return {
     width: obj.scale.x,
     depth: obj.scale.z,
@@ -15,7 +15,7 @@ export function getFootprintSize(obj: Object3DInfo): { width: number; depth: num
 }
 
 /** 오브젝트의 월드 공간 AABB를 계산합니다 (회전 무시, 보수적 근사) */
-function getAABB(obj: Object3DInfo): AABB {
+function getAABB(obj: SceneObject): AABB {
   const { position: p, scale: s } = obj
   return {
     min: { x: p.x - s.x / 2, y: p.y - s.y / 2, z: p.z - s.z / 2 },
@@ -40,7 +40,7 @@ function aabbOverlap(a: AABB, b: AABB): boolean {
  */
 export function getCollidingIds(
   draggingId: string,
-  objects: Record<string, Object3DInfo>,
+  objects: Record<string, SceneObject>,
 ): string[] {
   const dragging = objects[draggingId]
   if (!dragging) return []

@@ -1,4 +1,4 @@
-import { Object3DInfo } from "@/shared/types"
+import { SceneObject } from "@/shared/types"
 import { useObjectStore } from "@/modules/objects/store/use-object-store"
 import { ICommand } from "../command-manager"
 
@@ -10,7 +10,7 @@ import { ICommand } from "../command-manager"
 export class PasteObjectCommand implements ICommand {
   private newId: string = ""
 
-  constructor(private source: Object3DInfo) {}
+  constructor(private source: SceneObject) {}
 
   execute() {
     this.newId = useObjectStore.getState().addClonedObject(this.source)
